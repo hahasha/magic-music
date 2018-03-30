@@ -1,0 +1,69 @@
+<template>
+  <transition name="slide">
+    <music-list :bg-image="bgImage" :title="title" :songs="songs"></music-list>
+  </transition>
+</template>
+
+<script>
+  import {mapGetters} from 'vuex'
+  import {getSingerDetail} from "api/singer"
+  import {ERR_OK} from "api/config"
+  import {createSong} from 'common/js/song'
+  import musicList from 'components/music-list/music-list'
+
+  export default {
+    data(){
+      return {
+        songs : []
+      }
+    },
+    computed: {
+      title(){
+        return this.singer.name
+      },
+      bgImage(){
+        return this.singer.avatar
+      },
+      ...mapGetters([
+        'singer'
+      ])
+    },
+    created() {
+      this._getDetail()
+    },
+    methods: {
+      _getDetail() {
+        if (!this.singer.mid) {
+          this.$router.push('./singer')
+          return
+        }
+        getSingerDetail(this.singer.mid).then((res) => {
+          if (res.code === ERR_OK) {
+            this.songs = this._normalizeSongs(res.data.list,this.singer.id)
+          }
+        })
+      },
+      _normalizeSongs(list,id){
+        let ret = []
+        list.forEach((item)=>{
+          let {musicData} = item
+          if(musicData.songid && musicData.albummid){
+            ret.push(createSong(musicData,id))
+          }
+        })
+        return ret
+      }
+    },
+    components : {
+      musicList
+    }
+  }
+</script>
+
+<style scoped lang="stylus" rel="stylesheet/stylus">
+  .slide-enter-active, .slide-leave-active
+    transition: all 0.3s
+
+  .slide-enter, .slide-leave-to
+    transform: translate3d(100%, 0, 0)
+</style>
