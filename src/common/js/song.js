@@ -1,3 +1,7 @@
+import {getLyric} from 'api/song'
+import {ERR_OK} from "api/config";
+import {Base64} from 'js-base64'
+
 export default class Song {
   constructor({id, mid, singer, name, album, duration, image, url}) {
     this.id = id
@@ -9,10 +13,27 @@ export default class Song {
     this.image = image
     this.url = url
   }
+
+  getLyric() {
+    if (this.lyric) {
+      return Promise.resolve(this.lyric)
+    }
+    return new Promise((resolve, reject) => {
+      getLyric(this.mid).then((res) => {
+        if (res.retcode === ERR_OK) {
+          this.lyric = Base64.decode(res.lyric)
+          resolve(this.lyric)
+        } else {
+          reject('no lyric')
+        }
+      })
+    })
+  }
 }
 
+
 //封装方法
-export function createSong(musicData,id) {
+export function createSong(musicData) {
   return new Song({
     id: musicData.songid,
     mid: musicData.songmid,
@@ -20,10 +41,8 @@ export function createSong(musicData,id) {
     name: musicData.songname,
     album: musicData.albumname,
     duration: musicData.interval,
-    image: `https://y.gtimg.cn/music/photo_new/T001R150x150M000${id}.jpg?max_age=2592000`,
-    // url: `dl.stream.qqmusic.qq.com/${musicData.songmid}.m4a?fromtag=66`
-    url : `http://isure.stream.qqmusic.qq.com/C100${musicData.songmid}.m4a?fromtag=32`
-    // http://dl.stream.qqmusic.qq.com/C400003UTRfZ12wGOs.m4a?vkey=7394166A10D457F12DB9015F1FA63B17920E31C32C6D566065A2B17BB10F159ACE641C943134FDF346F2B80A6F57A198BF8B99D0374380A4&guid=6399709480&uin=1007892941&fromtag=66
+    image: `https://y.gtimg.cn/music/photo_new/T002R300x300M000${musicData.albummid}.jpg?max_age=2592000`,
+    url: `http://isure.stream.qqmusic.qq.com/C100${musicData.songmid}.m4a?fromtag=32`
   })
 }
 

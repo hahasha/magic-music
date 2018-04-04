@@ -6,7 +6,7 @@
     <h1 class="title" v-html="title"></h1>
     <div class="bg-image" :style="bgStyle" ref="bgImage">
       <div class="play-wrapper">
-        <div class="play"  v-show="songs.length>0" ref="playBtn">
+        <div class="play"  v-show="songs.length>0" ref="playBtn" @click="random">
           <i class="icon-play"></i>
           <span class="text">随机播放全部</span>
         </div>
@@ -84,8 +84,15 @@
       back(){
         this.$router.back()
       },
+      //点击随机播放，修改actions
+      random(){
+        this.randomPlay({
+          list: this.songs
+        })
+      },
       ...mapActions([
-        'selectPlay'
+        'selectPlay',
+        'randomPlay'
       ])
     },
     components: {
@@ -96,25 +103,23 @@
     watch: {
       scrollY(newVal) {
         let translateY = Math.max(this.minTranslateY, newVal)
-        this.$refs.layer.style[transform] = `translate3d(0,${translateY}px,0)`
-        let zIndex = 0
         let scale = 1
-        //向下拉时，图片放大
-        if(newVal > 0){
-          const percent = Math.abs(newVal/this.imageHeight)
-          scale = percent + 1
+        let zIndex = 0
+        const percent = Math.abs(newVal / this.imageHeight)
+        if (newVal > 0) {
+          scale = 1 + percent
           zIndex = 10
         }
-        //当layer层达到滚动上限时
+        this.$refs.layer.style[transform] = `translate3d(0,${translateY}px,0)`
         if (newVal < this.minTranslateY) {
           zIndex = 10
           this.$refs.bgImage.style.paddingTop = 0
           this.$refs.bgImage.style.height = `${RESERVED_HEIGHT}px`
-          this.$refs.playBtn.style.display = `none`
-        }else{
+          this.$refs.playBtn.style.display = 'none'
+        } else {
           this.$refs.bgImage.style.paddingTop = '70%'
           this.$refs.bgImage.style.height = 0
-          this.$refs.playBtn.style.display = ``
+          this.$refs.playBtn.style.display = ''
         }
         this.$refs.bgImage.style[transform] = `scale(${scale})`
         this.$refs.bgImage.style.zIndex = zIndex

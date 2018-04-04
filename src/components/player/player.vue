@@ -20,18 +20,32 @@
               </div>
             </div>
           </div>
+          <scroll class="middle-r" ref="lyricList" :data="currentLyric && currentLyric.lines">
+            <div class="lyric-wrapper">
+              <div v-if="currentLyric">
+                <p ref="lyricLine"
+                   class="text"
+                   :class="{'current': currentLineNum ===index}"
+                   v-for="(line,index) in currentLyric.lines">{{line.txt}}</p>
+              </div>
+            </div>
+          </scroll>
         </div>
         <div class="bottom">
+          <div class="dot-wrapper">
+            <span class="dot" :class="{'active':currentShow==='cd'}"></span>
+            <span class="dot" :class="{'active':currentShow==='lyric'}"></span>
+          </div>
           <div class="progress-wrapper">
             <span class="time time-l">{{format(currentTime)}}</span>
             <div class="progress-bar-wrapper">
-              <progress-bar :percent="percent"></progress-bar>
+              <progress-bar :percent="percent" @percentChange="onProgressBarChange"></progress-bar>
             </div>
             <span class="time time-r">{{format(currentSong.duration)}}</span>
           </div>
           <div class="operators">
-            <div class="icon i-left">
-              <i class="icon-sequence"></i>
+            <div class="icon i-left" @click="changeMode">
+              <i :class="iconMode"></i>
             </div>
             <div class="icon i-left" :class="disableCls">
               <i class="icon-prev" @click="prev"></i>
@@ -59,7 +73,9 @@
           <p class="desc" v-html="currentSong.singer"></p>
         </div>
         <div class="control">
-          <i :class="miniIcon" @click.stop="togglePlaying"></i>
+          <progress-circle :radius="radius" :percent="percent">
+            <i :class="miniIcon" @click.stop="togglePlaying" class="icon-mini"></i>
+          </progress-circle>
         </div>
         <div class="control">
           <i class="icon-playlist"></i>
@@ -75,27 +91,45 @@
   import animations from 'create-keyframe-animation'
   import {prefixStyle} from 'common/js/dom'
   import progressBar from 'base/progress-bar/progress-bar'
+  import progressCircle from 'base/progress-circle/progress-circle'
+  import {playMode} from 'common/js/config'
+  import {shuffle} from 'common/js/util'
+  import Lyric from 'lyric-parser'
+  import Scroll from 'base/scroll/scroll'
+  //Lyric是一个类
 
   const transform = prefixStyle('transform')
 
   export default {
-    data(){
+    data() {
       return {
-        isReady : false,
-        currentTime : 0
+        isReady: false,
+        currentTime: 0,
+        radius: 32,
+        currentLyric: null,
+        currentLineNum: 0,
+        playingLyric: '',
+        currentShow:'cd'
       }
     },
+    //touch定义用来连接touchStart和touchMove事件,在created里定义的原因是没有getter和setter(不用监听)
+    created(){
+      this.touch = {}
+    },
     computed: {
-      cdCls(){
+      cdCls() {
         return this.playing ? 'play' : 'play pause'
       },
-      miniIcon(){
+      miniIcon() {
         return this.playing ? 'icon-pause-mini' : 'icon-play-mini'
+      },
+      iconMode() {
+        return this.mode === playMode.sequence ? 'icon-sequence' : this.mode === playMode.loop ? 'icon-loop' : 'icon-random'
       },
       iconPlay() {
         return this.playing ? 'icon-pause' : 'icon-play'
       },
-      percent(){
+      percent() {
         return this.currentTime / this.currentSong.duration
       },
       ...mapGetters([
@@ -103,7 +137,9 @@
         'playList',
         'currentSong',
         'playing',
-        'currentIndex'
+        'currentIndex',
+        'mode',
+        'sequenceList'
       ])
     },
     methods: {
@@ -150,54 +186,54 @@
       open() {
         this.setFullScreen(true)
       },
-      updateTime(e){
+      updateTime(e) {
         this.currentTime = e.target.currentTime
       },
-      format(interval){
+      format(interval) {
         interval = interval | 0 //向下取整
         const minute = interval / 60 | 0
         const second = this._pad(interval % 60)
         return `${minute}:${second}`
       },
-      _pad(num , n = 2){
+      _pad(num, n = 2) {
         //补0函数
         let len = num.toString().length
-        while(len < n){
+        while (len < n) {
           num = '0' + num
           len++
         }
         return num
       },
-      ready(){
+      ready() {
         this.isReady = true
       },
-      error(){
+      error() {
         this.isReady = true
       },
-      prev(){
-        if(!this.isReady){
+      prev() {
+        if (!this.isReady) {
           return
         }
-        let index = this.currentIndex -1
-        if(index === -1){
-          index = this.playList.length -1
+        let index = this.currentIndex - 1
+        if (index === -1) {
+          index = this.playList.length - 1
         }
         this.setCurrentIndex(index)
-        if(!this.playing){
+        if (!this.playing) {
           this.togglePlaying()
         }
         this.isReady = false
       },
-      next(){
-        if(!this.isReady){
+      next() {
+        if (!this.isReady) {
           return
         }
         let index = this.currentIndex + 1
-        if(index === this.playList.length){
+        if (index === this.playList.length) {
           index = 0
         }
         this.setCurrentIndex(index)
-        if(!this.playing){
+        if (!this.playing) {
           this.togglePlaying()
         }
         this.isReady = false
@@ -205,8 +241,57 @@
       togglePlaying() {
         this.setPlayingState(!this.playing)
       },
-      disableCls(){
+      disableCls() {
         return this.isReady ? '' : 'disable'
+      },
+      changeMode() {
+        const mode = (this.mode + 1) % 3
+        this.setPlayMode(mode)
+        let list = null
+        if (mode === playMode.random) {
+          list = shuffle(this.sequenceList)
+        } else {
+          list = this.sequenceList
+        }
+        this.setPlayList(list)
+        this.resetCurrentIndex(list)
+      },
+      //切换播放模式时，当前歌曲不发生改变??????
+      resetCurrentIndex(list) {
+        let index = list.findIndex(() => {
+          return this.currentSong.id
+        })
+        this.setCurrentIndex(index)
+      },
+      //当拖拽按钮时，改变当前歌曲播放时间
+      onProgressBarChange(percent) {
+        const currentTime = this.currentSong.duration * percent
+        this.$refs.audio.currentTime = currentTime
+      },
+      getLyric() {
+        this.currentSong.getLyric().then((lyric) => {
+          if (this.currentSong.lyric !== lyric) {
+            return
+          }
+          this.currentLyric = new Lyric(lyric, this.handleLyric)
+          if (this.playing) {
+            this.currentLyric.play()
+          }
+        }).catch(() => {
+          this.currentLyric = null
+          this.playingLyric = ''
+          this.currentLineNum = 0
+        })
+      },
+      handleLyric({lineNum, txt}) {
+        this.currentLineNum = lineNum
+        if (lineNum > 5) {
+          let lineEl = this.$refs.lyricLine[lineNum - 5]
+          this.$refs.lyricList.scrollToElement(lineEl, 1000)
+        } else {
+          this.$refs.lyricList.scrollTo(0, 0, 1000)
+        }
+        this.playingLyric = txt
       },
       _getPosAndScale() {
         const targetWidth = 40
@@ -226,13 +311,19 @@
       ...mapMutations({
         setFullScreen: 'SET_FULL_SCREEN',
         setPlayingState: 'SET_PLAYING_STATE',
-        setCurrentIndex: 'SET_CURRENT_INDEX'
+        setCurrentIndex: 'SET_CURRENT_INDEX',
+        setPlayMode: 'SET_PLAY_MODE',
+        setPlayList: 'SET_PLAYLIST'
       })
     },
     watch: {
-      currentSong() {
+      currentSong(oldSong, newSong) {
+        if (oldSong.id === newSong.id) {
+          return
+        }
         this.$nextTick(() => {
           this.$refs.audio.play()
+          this.getLyric()
         })
       },
       playing(newPlaying) {
@@ -242,8 +333,10 @@
         })
       }
     },
-    components : {
-      progressBar
+    components: {
+      progressBar,
+      progressCircle,
+      Scroll
     }
   }
 </script>
