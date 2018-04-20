@@ -5,34 +5,44 @@ import Recommend from 'components/recommend/recommend'
 import Search from 'components/search/search'
 import Singer from 'components/singer/singer'
 import SingerDetail from 'components/singer-detail/singer-detail'
+import Disc from 'components/disc/disc'
+import TopList from 'components/top-list/top-list'
 
 Vue.use(Router)
 
 export default new Router({
-  routes : [
+  routes: [
     {
-      path : '/',
-      redirect : '/recommend'
+      path: '/',
+      redirect: '/recommend'
     },
     {
-      path : '/rank',
-      component : Rank
+      path: '/rank',
+      component: Rank,
+      children: [{
+        path: ':id',
+        component: TopList
+      }]
     },
     {
-      path : '/recommend',
-      component : Recommend
+      path: '/recommend',
+      component: Recommend,
+      children: [{
+        path: ':id',
+        component: Disc
+      }]
     },
     {
-      path : '/search',
-      component : Search
+      path: '/search',
+      component: Search
     },
     {
-      path : '/singer',
-      component : Singer,
-      children : [
+      path: '/singer',
+      component: Singer,
+      children: [
         {
-          path : ':id',
-          component : SingerDetail
+          path: ':id',
+          component: SingerDetail
         }
       ]
     }

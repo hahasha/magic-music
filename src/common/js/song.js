@@ -42,9 +42,10 @@ export function createSong(musicData) {
     album: musicData.albumname,
     duration: musicData.interval,
     image: `https://y.gtimg.cn/music/photo_new/T002R300x300M000${musicData.albummid}.jpg?max_age=2592000`,
-    url: `http://isure.stream.qqmusic.qq.com/C100${musicData.songmid}.m4a?fromtag=32`
-  })
-}
+    // url: `http://isure.stream.qqmusic.qq.com/C100${musicData.songmid}.m4a?fromtag=32`
+    // url:`http://dl.stream.qqmusic.qq.com/C400${musicData.songmid}.m4a?guid=6399709480&vkey=71DCC11CB3376E6BAE2D8E564FF5FD4174B19FAC70711B0535AAB24308B88AC1CA76EEFBD4C26B6FC82472F3CC8B81EBE3946786CA3A8085&uin=0&fromtag=38`
+    url: `http://dl.stream.qqmusic.qq.com/C100${musicData.songmid}.m4a?vkey=${musicData.vkey}&uin=1007892941&guid=6399709480&fromtag=66`
+  })}
 
 function filterSinger(singer) {
   let ret = []
@@ -56,3 +57,5 @@ function filterSinger(singer) {
   })
   return ret.join('/')
 }
+
+

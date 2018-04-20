@@ -21,7 +21,16 @@ const mutations = {
   },
   [types.SET_CURRENT_INDEX](state, index) {
     state.currentIndex = index
-  }
+  },
+  [types.SET_DISC](state,disc){
+    state.disc = disc
+  },
+  [types.SET_TOPLIST](state,topList){
+    state.topList = topList
+  },
+  // [types.SET_VKEY](state,vkey){
+  //   state.vkey = vkey
+  // }
 }
 
 export default mutations

@@ -6,7 +6,7 @@
     <h1 class="title" v-html="title"></h1>
     <div class="bg-image" :style="bgStyle" ref="bgImage">
       <div class="play-wrapper">
-        <div class="play"  v-show="songs.length>0" ref="playBtn" @click="random">
+        <div class="play" v-show="songs.length>0" ref="playBtn" @click="random">
           <i class="icon-play"></i>
           <span class="text">随机播放全部</span>
         </div>
@@ -32,6 +32,7 @@
   import Loading from 'base/loading/loading'
   import {prefixStyle} from 'common/js/dom'
   import {mapActions} from 'vuex'
+  import {ERR_OK} from "api/config";
 
   const transform = prefixStyle('transform')
 
@@ -72,20 +73,20 @@
       this.$refs.list.$el.style.top = `${this.imageHeight}px`
     },
     methods: {
-      selectItem(item,index){
+      selectItem(item, index) {
         this.selectPlay({
-          list : this.songs,
+          list: this.songs,
           index
         })
       },
       scroll(pos) {
         this.scrollY = pos.y
       },
-      back(){
+      back() {
         this.$router.back()
       },
       //点击随机播放，修改actions
-      random(){
+      random() {
         this.randomPlay({
           list: this.songs
         })
@@ -93,7 +94,7 @@
       ...mapActions([
         'selectPlay',
         'randomPlay'
-      ])
+      ]),
     },
     components: {
       SongList,

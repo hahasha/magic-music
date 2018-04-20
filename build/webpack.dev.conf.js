@@ -89,6 +89,62 @@ const devWebpackConfig = merge(baseWebpackConfig, {
           }).catch((e) => {
             console.log(e)
           })
+        }),
+        app.get('/api/getSongList', function (req, res) {
+          let url = 'https://c.y.qq.com/qzone/fcg-bin/fcg_ucc_getcdinfo_byids_cp.fcg'
+          axios.get(url, {
+            headers: {
+              host: 'c.y.qq.com',
+              referer: 'https://y.qq.com/w/taoge.html?ADTAG=newyqq.taoge'
+            },
+            params: req.query
+          }).then((response) => {
+            res.json(response.data)
+          }).catch((e) => {
+            console.log(e)
+          })
+        }),
+        app.get('/api/getTopList', function (req, res) {
+          let url = 'https://c.y.qq.com/v8/fcg-bin/fcg_myqq_toplist.fcg'
+          axios.get(url, {
+            headers: {
+              host: 'c.y.qq.com',
+              referer: 'https://m.y.qq.com/'
+            },
+            params: req.query
+          }).then((response) => {
+            res.json(response.data)
+          }).catch((e) => {
+            console.log(e)
+          })
+        }),
+        app.get('/api/getMusicList', function (req, res) {
+          let url = 'https://c.y.qq.com/v8/fcg-bin/fcg_v8_toplist_cp.fcg'
+          axios.get(url, {
+            headers: {
+              host: 'c.y.qq.com',
+              referer: 'https://y.qq.com/n/yqq/toplist/4.html'
+            },
+            params: req.query
+          }).then((response) => {
+            res.json(response.data)
+          }).catch((e) => {
+            console.log(e)
+          })
+        }),
+        app.get('/api/getVkey', function (req, res) {
+          let url = 'https://c.y.qq.com/base/fcgi-bin/fcg_music_express_mobile3.fcg'
+          axios.get(url, {
+            headers: {
+              host: 'c.y.qq.com',
+              referer: 'https://y.qq.com/portal/player.html'
+            },
+            params: req.query
+          }).then((response) => {
+            res.json(response.data)
+          }).catch((e) => {
+            console.log(e)
+          })
         })
     }
   },
