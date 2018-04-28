@@ -47,7 +47,7 @@ export function createSong(musicData) {
     url: `http://dl.stream.qqmusic.qq.com/C100${musicData.songmid}.m4a?vkey=${musicData.vkey}&uin=1007892941&guid=6399709480&fromtag=66`
   })}
 
-function filterSinger(singer) {
+export function filterSinger(singer) {
   let ret = []
   if (!singer) {
     return ''

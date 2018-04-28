@@ -1,6 +1,6 @@
 <template>
   <transition name="slide">
-    <music-list :title="title" :bg-image="bgImg" :songs="songs"></music-list>
+    <music-list :rank="rank" :title="title" :bg-image="bgImg" :songs="songs"></music-list>
   </transition>
 </template>
 
@@ -30,27 +30,28 @@
     },
     data() {
       return {
-        songs: []
+        songs: [],
+        rank: true
       }
     },
-    created(){
+    created() {
       this._getMusicList()
     },
     methods: {
-      _getMusicList(){
-        getMusicList(this.topList.id).then((res)=>{
-          if(res.code === ERR_OK){
+      _getMusicList() {
+        getMusicList(this.topList.id).then((res) => {
+          if (res.code === ERR_OK) {
             this.songs = this._normalizeSongs(res.songlist)
           }
         })
       },
-      _normalizeSongs(list){
+      _normalizeSongs(list) {
         let ret = []
-        list.forEach((item)=>{
+        list.forEach((item) => {
           const musicData = item.data
-          if(musicData.songid&&musicData.albumid){
-            getVkey(musicData.songmid).then((res)=>{
-              if(res.code === ERR_OK){
+          if (musicData.songid && musicData.albumid) {
+            getVkey(musicData.songmid).then((res) => {
+              if (res.code === ERR_OK) {
                 musicData.vkey = res.data.items[0].vkey
               }
             })

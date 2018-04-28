@@ -28,6 +28,14 @@
       listenScroll: {
         type: Boolean,
         default: false
+      },
+      pullUp: {
+        type: Boolean,
+        default: false
+      },
+      beforeScroll: {
+        type: Boolean,
+        default: false
       }
     },
     mounted() {
@@ -44,11 +52,23 @@
           probeType: this.probeType,
           click: this.click
         })
-        if(this.listenScroll){
+        if (this.listenScroll) {
           //监听scroll的滚动事件
           let me = this//保留实例
-          this.scroll.on('scroll',(pos)=>{
-            me.$emit('scroll',pos)//事件代理
+          this.scroll.on('scroll', (pos) => {
+            me.$emit('scroll', pos)//事件代理
+          })
+        }
+        if (this.pullUp) {
+          this.scroll.on('scrollEnd', () => {
+            if (this.scroll.y <= this.scroll.maxScrollY + 50) {
+              this.$emit('scrollToEnd')
+            }
+          })
+        }
+        if (this.beforeScroll) {
+          this.scroll.on('beforeScroll', () => {
+            this.emit('beforeScroll')
           })
         }
       },

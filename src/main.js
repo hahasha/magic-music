@@ -12,8 +12,8 @@ import store from './store'
 fastclick.attach(document.body);
 
 Vue.config.productionTip = false;
-Vue.use(vueLazyLoad,{
-  loading : require('common/image/default.png')
+Vue.use(vueLazyLoad, {
+  loading: require('common/image/default.png')
 })
 
 /* eslint-disable no-new */
@@ -21,6 +21,6 @@ new Vue({
   el: '#app',
   router,
   store,
-  components: { App },
-  template: '<App/>'
+  components: {App},
+  template: '<App/>',
 })

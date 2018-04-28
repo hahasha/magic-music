@@ -20,4 +20,4 @@ export const disc = state => state.disc
 
 export const topList = state => state.topList
 
-// export const vkey = state => state.vkey
+export const searchHistory = state => state.searchHistory
