@@ -84,12 +84,14 @@
             <i :class="miniIcon" @click.stop="togglePlaying" class="icon-mini"></i>
           </progress-circle>
         </div>
-        <div class="control">
+        <div class="control" @click="showPlayList">
           <i class="icon-playlist"></i>
         </div>
       </div>
     </transition>
-    <audio :src="currentSong.url" ref="audio" @canplay="ready" @error="error" @timeupdate="updateTime" @ended="end"></audio>
+    <playlist ref="playlist"></playlist>
+    <audio :src="currentSong.url" ref="audio" @canplay="ready" @error="error" @timeupdate="updateTime"
+           @ended="end"></audio>
   </div>
 </template>
 
@@ -103,6 +105,7 @@
   import {shuffle} from 'common/js/util'
   import Lyric from 'lyric-parser'
   import Scroll from 'base/scroll/scroll'
+  import Playlist from 'components/playlist/playlist'
   //Lyric是一个类
 
   const transform = prefixStyle('transform')
@@ -151,6 +154,9 @@
       ])
     },
     methods: {
+      showPlayList() {
+        this.$refs.playlist.show()
+      },
       enter(el, done) {
         const {x, y, scale} = this._getPosAndScale()
         let animation = {
@@ -219,18 +225,18 @@
         this.isReady = true
       },
       //ended事件在audio播放完成时触发
-      end(){
-        if(this.mode === playMode.loop){
+      end() {
+        if (this.mode === playMode.loop) {
           this.loop()
-        }else{
+        } else {
           this.next()
         }
       },
-      loop(){
+      loop() {
         this.$refs.audio.currentTime = 0
         this.$refs.audio.play()
         this.setPlayingState(true)
-        if(this.currentLyric){
+        if (this.currentLyric) {
           this.currentLyric.seek(0)
         }
       },
@@ -265,12 +271,12 @@
         this.isReady = false
       },
       togglePlaying() {
-        if(!this.isReady){
+        if (!this.isReady) {
           return
         }
         this.setPlayingState(!this.playing)
         //当暂停播放时，歌词也暂停
-        if(this.currentLyric){
+        if (this.currentLyric) {
           this.currentLyric.togglePlay()
         }
       },
@@ -300,7 +306,7 @@
       onProgressBarChange(percent) {
         const currentTime = this.currentSong.duration * percent
         this.$refs.audio.currentTime = currentTime
-        if(this.currentLyric){
+        if (this.currentLyric) {
           this.currentLyric.seek(currentTime * 1000)
         }
       },
@@ -365,27 +371,27 @@
         this.$refs.lyricList.$el.style[transform] = `translate3d(${offsetWidth}px,0,0)`
         this.touch.percent = Math.abs(offsetWidth / window.innerWidth)
         this.$refs.lyricList.$el.style[transitionDuration] = 0
-        this.$refs.middleL.style.opacity = 1- this.touch.percent
+        this.$refs.middleL.style.opacity = 1 - this.touch.percent
         this.$refs.middleL.style[transitionDuration] = 0
       },
       middleTouchEnd() {
         let offsetWidth
         let opacity
-        if(this.currentShow === 'cd'){
-          if(this.touch.percent > 0.1){
+        if (this.currentShow === 'cd') {
+          if (this.touch.percent > 0.1) {
             offsetWidth = -window.innerWidth
             opacity = 0
             this.currentShow = 'lyric'
-          }else{
+          } else {
             offsetWidth = 0
             opacity = 1
           }
-        }else{
-          if(this.touch.percent < 0.9){
+        } else {
+          if (this.touch.percent < 0.9) {
             offsetWidth = 0
             this.currentShow = 'cd'
             opacity = 1
-          }else{
+          } else {
             offsetWidth = -window.innerWidth
             opacity = 0
           }
@@ -421,10 +427,10 @@
         //   this.getLyric()
         // })
         clearTimeout(this.timer)
-        this.timer = setTimeout(()=>{
+        this.timer = setTimeout(() => {
           this.$refs.audio.play()
           this.getLyric()
-        },1000)
+        }, 1000)
       },
       playing(newPlaying) {
         const audio = this.$refs.audio
@@ -436,7 +442,8 @@
     components: {
       progressBar,
       progressCircle,
-      Scroll
+      Scroll,
+      Playlist
     }
   }
 </script>
